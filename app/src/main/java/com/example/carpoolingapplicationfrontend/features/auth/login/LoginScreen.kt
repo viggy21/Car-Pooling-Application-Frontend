@@ -11,15 +11,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.carpoolingapplicationfrontend.R
-import com.example.carpoolingapplicationfrontend.features.navigation.Routes
+import com.example.carpoolingapplicationfrontend.navigation.Routes
 
 @Composable
 fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifier: Modifier = Modifier) {
@@ -44,8 +43,18 @@ fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifi
     // Variables
     val email by viewModel.email.observeAsState(initial = "")
     val password by viewModel.password.observeAsState(initial = "")
+    //val userData = viewModel.userData.observeAsState()
+    val isLoading = viewModel.isLoading.observeAsState()
+    val loginResult by viewModel.loginResult.observeAsState()
 
-    // Layout
+    LaunchedEffect(loginResult) {
+        loginResult?.let {
+            // successful result means navigating to another page
+            navController.navigate(Routes.testScreen)
+        }
+    }
+
+    // UI Section
     Column (
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -86,6 +95,7 @@ fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifi
             Button(
                 onClick = {
                     // Use the email and password with the viewmodel to log in
+                    viewModel.login()
                 },
                 ) {
                 Text(text = "Login")
@@ -98,6 +108,10 @@ fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifi
                 navController.navigate(Routes.registerScreen)
             }) {
                 Text(text = "Sign Up")
+            }
+
+            if (isLoading.value == true) {
+                CircularProgressIndicator()
             }
 
             Spacer(modifier = Modifier.height(32.dp))
