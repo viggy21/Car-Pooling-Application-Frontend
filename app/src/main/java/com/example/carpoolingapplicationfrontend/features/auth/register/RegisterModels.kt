@@ -11,5 +11,5 @@ data class RegisterRequest(
 data class RegisterResponse(
     val code: String,
     val message: String,
-    val `data`: String // TODO: this shouldn't be a string, it should be {}
+    val data: Any // TODO: this shouldn't be a string, it should be {}
 )
