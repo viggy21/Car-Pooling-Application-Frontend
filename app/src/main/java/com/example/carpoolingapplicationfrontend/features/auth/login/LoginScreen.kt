@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.carpoolingapplicationfrontend.R
 import com.example.carpoolingapplicationfrontend.navigation.Routes
+import com.example.carpoolingapplicationfrontend.ui.theme.LightGreen
 
 @Composable
 fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifier: Modifier = Modifier) {
@@ -50,7 +51,9 @@ fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifi
     LaunchedEffect(loginResult) {
         loginResult?.let {
             // successful result means navigating to another page
-            navController.navigate(Routes.testScreen)
+
+            //navController.navigate(Routes.testScreen)
+            navController.navigate(Routes.bookingListScreen)
         }
     }
 
@@ -63,7 +66,7 @@ fun LoginScreen (navController: NavController, viewModel: LoginViewModel, modifi
         // Welcome message and logo
         Column (
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.background(Color.Green).fillMaxWidth().padding(16.dp)
+            modifier = Modifier.background(LightGreen).fillMaxWidth().padding(16.dp)
         ) {
             Text(text = "Welcome to Moober!", fontSize = 20.sp, fontWeight = FontWeight.Bold)
             Icon(painter = painterResource(id = R.drawable.directions_car_24px), contentDescription = null,

@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.carpoolingapplicationfrontend.features.Gender
 import com.example.carpoolingapplicationfrontend.features.auth.login.LoginRepository
 import com.example.carpoolingapplicationfrontend.features.auth.login.LoginResponse
 import kotlinx.coroutines.launch
@@ -18,8 +19,8 @@ class RegisterViewModel (
     val name : LiveData<String> = _name
     private val _phone = MutableLiveData<String>()
     val phone : LiveData<String> = _phone
-    private val _sex = MutableLiveData<String>()
-    val sex : LiveData<String> = _sex
+    private val _gender = MutableLiveData(Gender.MALE)
+    val gender: LiveData<Gender> = _gender
     private val _email = MutableLiveData<String>()
     val email : LiveData<String> = _email
     private val _password = MutableLiveData<String>()
@@ -34,8 +35,11 @@ class RegisterViewModel (
     fun onPhoneUpdate(newPhone : String) {
         _phone.value = newPhone
     }
-    fun onSexUpdate(newSex : String) {
-        _sex.value = newSex
+//    fun onSexUpdate(newSex : String) {
+//        _sex.value = newSex
+//    }
+    fun onGenderUpdate(gender: Gender) {
+        _gender.value = gender
     }
     fun onEmailUpdate(newEmail : String) {
         _email.value = newEmail
@@ -48,7 +52,8 @@ class RegisterViewModel (
     fun register() {
         val nameValue = _name.value ?: ""
         val phoneValue = _phone.value ?: ""
-        val sexValue = _sex.value ?: ""
+        //val sexValue = _sex.value ?: ""
+        val genderValue = gender.value?.value ?: 0
         val emailValue = _email.value ?: ""
         val passwordValue = _password.value ?: ""
 
@@ -61,7 +66,7 @@ class RegisterViewModel (
         viewModelScope.launch {
             Log.d("REGISTER_DEBUG", "Coroutine started")
             try {
-                val response = repository.register(nameValue, phoneValue, sexValue, emailValue, passwordValue)
+                val response = repository.register(nameValue, phoneValue, genderValue.toString(), emailValue, passwordValue)
 
                 Log.d("REGISTER_DEBUG", "Response received: ${response.code()}")
 

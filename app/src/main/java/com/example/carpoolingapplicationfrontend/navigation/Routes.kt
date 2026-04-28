@@ -4,4 +4,6 @@ object Routes {
     var loginScreen = "login_screen"
     var registerScreen = "register_screen"
     var testScreen = "test_screen"
+
+    var bookingListScreen = "booking_list_screen"
 }

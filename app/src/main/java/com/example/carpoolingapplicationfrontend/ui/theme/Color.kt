@@ -9,3 +9,10 @@ val Pink80 = Color(0xFFEFB8C8)
 val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
+
+// App theme colours
+val LightGreen = Color(0xFFD6DCD5)
+val MediumGreen = Color(0xFFAABFAC)
+val DarkGreen = Color(0xFF759A79)
+val LightGrey = Color(0xFFCACACA)
+val DarkGrey = Color(0xFF919191)

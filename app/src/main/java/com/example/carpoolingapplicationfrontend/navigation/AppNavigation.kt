@@ -13,6 +13,8 @@ import com.example.carpoolingapplicationfrontend.features.auth.login.LoginScreen
 import com.example.carpoolingapplicationfrontend.features.auth.login.LoginViewModel
 import com.example.carpoolingapplicationfrontend.features.auth.register.RegisterScreen
 import com.example.carpoolingapplicationfrontend.features.auth.register.RegisterViewModel
+import com.example.carpoolingapplicationfrontend.features.booking.BookingListScreen
+import com.example.carpoolingapplicationfrontend.features.booking.BookingListViewModel
 
 @Composable
 fun AppNavigation(activity : MainActivity,modifier: Modifier = Modifier) {
@@ -21,6 +23,7 @@ fun AppNavigation(activity : MainActivity,modifier: Modifier = Modifier) {
     // Create view models
     val loginViewModel = ViewModelProvider(activity)[LoginViewModel::class.java]
     val registerViewModel = ViewModelProvider(activity)[RegisterViewModel::class.java]
+    val bookingListViewModel = ViewModelProvider(activity)[BookingListViewModel::class.java]
 
     NavHost(navController = navController, startDestination = Routes.loginScreen, builder = {
         composable(Routes.loginScreen) {
@@ -31,6 +34,9 @@ fun AppNavigation(activity : MainActivity,modifier: Modifier = Modifier) {
         }
         composable(Routes.testScreen) {
             TestScreen()
+        }
+        composable(Routes.bookingListScreen) {
+            BookingListScreen(navController = navController, viewModel = bookingListViewModel)
         }
     })
 }
