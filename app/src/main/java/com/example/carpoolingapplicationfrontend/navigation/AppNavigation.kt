@@ -1,42 +1,80 @@
 package com.example.carpoolingapplicationfrontend.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.carpoolingapplicationfrontend.MainActivity
-import com.example.carpoolingapplicationfrontend.features.TestScreen
-import com.example.carpoolingapplicationfrontend.features.auth.login.LoginScreen
-import com.example.carpoolingapplicationfrontend.features.auth.login.LoginViewModel
-import com.example.carpoolingapplicationfrontend.features.auth.register.RegisterScreen
-import com.example.carpoolingapplicationfrontend.features.auth.register.RegisterViewModel
-import com.example.carpoolingapplicationfrontend.features.booking.BookingListScreen
-import com.example.carpoolingapplicationfrontend.features.booking.BookingListViewModel
+import com.example.carpoolingapplicationfrontend.ui.screens.ForgotPasswordScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.HomeScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.LoginScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.RegisterScreen
+import com.example.carpoolingapplicationfrontend.viewmodel.AuthViewModel
 
 @Composable
-fun AppNavigation(activity : MainActivity,modifier: Modifier = Modifier) {
+fun App() {
     val navController = rememberNavController()
+    AppNavHost(navController = navController)
+}
 
-    // Create view models
-    val loginViewModel = ViewModelProvider(activity)[LoginViewModel::class.java]
-    val registerViewModel = ViewModelProvider(activity)[RegisterViewModel::class.java]
-    val bookingListViewModel = ViewModelProvider(activity)[BookingListViewModel::class.java]
+@Composable
+fun AppNavHost(
+    navController: NavHostController = rememberNavController()
+) {
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Login.route
+    ) {
+        composable(Screen.Login.route) {
+            val authViewModel: AuthViewModel = viewModel()
 
-    NavHost(navController = navController, startDestination = Routes.loginScreen, builder = {
-        composable(Routes.loginScreen) {
-            LoginScreen(navController = navController, viewModel = loginViewModel)
+            LoginScreen(
+                viewModel = authViewModel,
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onRegisterClick = {
+                    navController.navigate(Screen.Register.route)
+                },
+                onForgotPasswordClick = {
+                    navController.navigate(Screen.ForgotPassword.route)
+                }
+            )
         }
-        composable(Routes.registerScreen) {
-            RegisterScreen(navController = navController, viewModel = registerViewModel)
+
+        composable(Screen.Home.route) {
+            HomeScreen()
         }
-        composable(Routes.testScreen) {
-            TestScreen()
+
+        composable(Screen.Register.route) {
+            val authViewModel: AuthViewModel = viewModel()
+
+            RegisterScreen(
+                viewModel = authViewModel,
+                onRegisterSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Register.route) {
+                            inclusive = true
+                        }
+                    }
+                },
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Register.route) {
+                            inclusive = true
+                        }
+                    }
+                }
+            )
         }
-        composable(Routes.bookingListScreen) {
-            BookingListScreen(navController = navController, viewModel = bookingListViewModel)
+
+        composable(Screen.ForgotPassword.route) {
+            ForgotPasswordScreen()
         }
-    })
+    }
 }

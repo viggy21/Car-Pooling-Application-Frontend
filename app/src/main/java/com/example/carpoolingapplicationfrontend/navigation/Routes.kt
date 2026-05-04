@@ -1,9 +1,15 @@
 package com.example.carpoolingapplicationfrontend.navigation
 
-object Routes {
-    var loginScreen = "login_screen"
-    var registerScreen = "register_screen"
-    var testScreen = "test_screen"
+sealed class Screen(val route: String) {
+    object Login : Screen("login")
+    object Home : Screen("home")
+    object Register : Screen("register")
+    object ForgotPassword : Screen("forgot_password")
+}
 
-    var bookingListScreen = "booking_list_screen"
+object Routes {
+    const val loginScreen = "login_screen"
+    const val registerScreen = "register_screen"
+    const val testScreen = "test_screen"
+    const val bookingListScreen = "booking_list_screen"
 }
