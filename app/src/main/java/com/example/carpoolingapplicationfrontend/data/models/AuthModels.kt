@@ -1,12 +1,12 @@
 package com.example.carpoolingapplicationfrontend.data.models
 
 data class RegisterRequest(
-    val fullName: String,
+    val name: String,
     val email: String,
     val password: String,
-    val vehicleMake: String,
-    val vehicleModel: String,
-    val vehiclePlate: String
+    val vehicleMake: String?,
+    val vehicleModel: String?,
+    val vehiclePlate: String?
 )
 
 typealias RegisterResponse = ApiResponse<Map<String, Any>>
@@ -23,3 +23,21 @@ data class LoginData(
 )
 
 typealias LoginResponse = ApiResponse<LoginData>
+
+data class ResetPasswordRequest(
+    val email: String,
+    val pwd: String
+)
+
+data class SendMailCodeRequest(
+    val mailAddr: String
+)
+
+data class CheckMailCodeRequest(
+    val mailAddr: String,
+    val code: String
+)
+
+typealias ResetPasswordResponse = ApiResponse<Map<String, Any>>
+typealias SendMailCodeResponse = ApiResponse<Map<String, Any>>
+typealias CheckMailCodeResponse = ApiResponse<Boolean>

@@ -23,14 +23,15 @@ import androidx.navigation.NavController
 @Composable
 fun BookingListScreen(
     navController: NavController,
-    viewModel: BookingListViewModel
+    viewModel: BookingListViewModel,
+    userId: Long
 ) {
     val state = viewModel.uiState
 
     // trigger API call once
 
     LaunchedEffect(Unit) {
-        viewModel.fetchBookings(userId = 1) // TODO: replace with actual user Id
+        viewModel.fetchBookings(userId = userId)
     }
 
     Column (modifier = Modifier.fillMaxSize()) {

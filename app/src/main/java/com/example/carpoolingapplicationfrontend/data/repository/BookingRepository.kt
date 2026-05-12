@@ -1,7 +1,6 @@
 package com.example.carpoolingapplicationfrontend.data.repository
 
 import com.example.carpoolingapplicationfrontend.data.api.BookingApiService
-import com.example.carpoolingapplicationfrontend.data.api.RetrofitClient
 import com.example.carpoolingapplicationfrontend.data.models.AcceptMatchResponse
 import com.example.carpoolingapplicationfrontend.data.models.ApiResponse
 import com.example.carpoolingapplicationfrontend.data.models.BookingDetailResponse
@@ -24,7 +23,7 @@ import com.example.carpoolingapplicationfrontend.data.models.UserBookingsRespons
 import retrofit2.Response
 
 class BookingRepository(
-    private val bookingApiService: BookingApiService = RetrofitClient.bookingApiService
+    private val bookingApiService: BookingApiService
 ) {
     suspend fun createBooking(request: CreateBookingRequest): Result<CreateBookingResponse> {
         return try {

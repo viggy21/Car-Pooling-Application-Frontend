@@ -1,9 +1,12 @@
 package com.example.carpoolingapplicationfrontend.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.carpoolingapplicationfrontend.data.datastore.AuthPreferences
 import com.example.carpoolingapplicationfrontend.data.models.AcceptMatchResponse
 import com.example.carpoolingapplicationfrontend.data.models.BookingDetailResponse
+import com.example.carpoolingapplicationfrontend.data.models.BookingDto
 import com.example.carpoolingapplicationfrontend.data.models.BookingLocationResponse
 import com.example.carpoolingapplicationfrontend.data.models.BookingSearchRequest
 import com.example.carpoolingapplicationfrontend.data.models.CreateBookingRequest
@@ -20,6 +23,7 @@ import com.example.carpoolingapplicationfrontend.data.models.StartTripResponse
 import com.example.carpoolingapplicationfrontend.data.models.UpdateBookingRequest
 import com.example.carpoolingapplicationfrontend.data.models.UpdateBookingResponse
 import com.example.carpoolingapplicationfrontend.data.models.UserBookingsResponse
+import com.example.carpoolingapplicationfrontend.data.remote.ApiProvider
 import com.example.carpoolingapplicationfrontend.data.repository.BookingRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -54,9 +58,41 @@ sealed class BookingRequestUiState<out T> {
     data class Error(val message: String) : BookingRequestUiState<Nothing>()
 }
 
+data class RideUiModel(
+    val id: String,
+    val fromLocation: String,
+    val toLocation: String,
+    val date: String,
+    val time: String,
+    val seats: String?,
+    val status: String
+)
+
+data class MatchUiModel(
+    val id: String,
+    val name: String,
+    val route: String
+)
+
+data class MatchDetailsUiModel(
+    val id: String,
+    val riderName: String,
+    val fromLocation: String,
+    val toLocation: String,
+    val date: String,
+    val time: String,
+    val pickupPoint: String,
+    val notes: String?
+)
+
 class BookingViewModel(
-    private val repository: BookingRepository = BookingRepository()
-) : ViewModel() {
+    application: Application
+) : AndroidViewModel(application) {
+
+    private val authPreferences = AuthPreferences(application)
+    private val repository = BookingRepository(
+        bookingApiService = ApiProvider(authPreferences).bookingApiService
+    )
 
     private val _createBookingState = MutableStateFlow<CreateBookingUiState>(
         CreateBookingUiState.Idle
@@ -136,6 +172,20 @@ class BookingViewModel(
         )
     val bookingLocationState: StateFlow<BookingRequestUiState<BookingLocationResponse>> =
         _bookingLocationState.asStateFlow()
+
+    private val _matchDetailsState = MutableStateFlow(
+        MatchDetailsUiModel(
+            id = "",
+            riderName = "Sarah Johnson",
+            fromLocation = "Clayton Campus",
+            toLocation = "Caulfield Campus",
+            date = "2026-05-03",
+            time = "09:00 AM",
+            pickupPoint = "Main bus stop near Monash Sport",
+            notes = "I will be waiting near the bus stop. Happy to leave a few minutes earlier if needed."
+        )
+    )
+    val matchDetailsState: StateFlow<MatchDetailsUiModel> = _matchDetailsState.asStateFlow()
 
     fun createBooking(request: CreateBookingRequest) {
         _createBookingState.value = CreateBookingUiState.Loading
@@ -242,6 +292,67 @@ class BookingViewModel(
         }
     }
 
+    fun loadMockMatchDetails(matchId: String) {
+        _matchDetailsState.value = MatchDetailsUiModel(
+            id = matchId,
+            riderName = "Sarah Johnson",
+            fromLocation = "Clayton Campus",
+            toLocation = "Caulfield Campus",
+            date = "2026-05-03",
+            time = "09:00 AM",
+            pickupPoint = "Main bus stop near Monash Sport",
+            notes = "I will be waiting near the bus stop. Happy to leave a few minutes earlier if needed."
+        )
+    }
+
+    fun getUpcomingRideUiModel(
+        state: BookingRequestUiState<UserBookingsResponse>
+    ): RideUiModel? {
+        val bookings = (state as? BookingRequestUiState.Success)?.response?.data?.data
+        return bookings?.firstOrNull()?.toRideUiModel()
+            ?: if (state is BookingRequestUiState.Idle) {
+                RideUiModel(
+                    id = "mock-upcoming-ride",
+                    fromLocation = "Clayton Campus",
+                    toLocation = "Caulfield Campus",
+                    date = "2026-05-03",
+                    time = "09:00 AM",
+                    seats = "3 seats",
+                    status = "Offering"
+                )
+            } else {
+                null
+            }
+    }
+
+    fun getMatchUiModels(
+        state: BookingRequestUiState<MatchedBookingsResponse>
+    ): List<MatchUiModel> {
+        val bookings = (state as? BookingRequestUiState.Success)?.response?.data
+        return bookings?.map { booking ->
+            MatchUiModel(
+                id = booking.id.toString(),
+                name = "User ${booking.userId}",
+                route = "${booking.originName} -> ${booking.destName}"
+            )
+        } ?: if (state is BookingRequestUiState.Idle) {
+            listOf(
+                MatchUiModel(
+                    id = "mock-match-1",
+                    name = "Sarah Johnson",
+                    route = "Clayton Campus -> Caulfield Campus"
+                ),
+                MatchUiModel(
+                    id = "mock-match-2",
+                    name = "Michael Chen",
+                    route = "Clayton Campus -> Caulfield Campus"
+                )
+            )
+        } else {
+            emptyList()
+        }
+    }
+
     fun resetCreateBookingState() {
         _createBookingState.value = CreateBookingUiState.Idle
     }
@@ -311,5 +422,20 @@ class BookingViewModel(
                 }
             )
         }
+    }
+
+    private fun BookingDto.toRideUiModel(): RideUiModel {
+        return RideUiModel(
+            id = id.toString(),
+            fromLocation = originName,
+            toLocation = destName,
+            date = expectedStartTime.substringBefore("T", expectedStartTime),
+            time = expectedStartTime.substringAfter("T", expectedStartTime)
+                .substringBefore(".")
+                .takeIf { it != expectedStartTime }
+                ?: expectedStartTime,
+            seats = null,
+            status = if (role == 0) "Offering" else "Requesting"
+        )
     }
 }

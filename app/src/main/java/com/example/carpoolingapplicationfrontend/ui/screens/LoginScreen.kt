@@ -38,15 +38,12 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.carpoolingapplicationfrontend.data.models.LoginRequest
-import com.example.carpoolingapplicationfrontend.data.models.LoginResponse
 import com.example.carpoolingapplicationfrontend.ui.components.AppPrimaryGreen
 import com.example.carpoolingapplicationfrontend.ui.components.EmailIcon
 import com.example.carpoolingapplicationfrontend.ui.components.LockIcon
 import com.example.carpoolingapplicationfrontend.ui.components.LoginErrorMessage
 import com.example.carpoolingapplicationfrontend.ui.components.LoginInputField
 import com.example.carpoolingapplicationfrontend.ui.components.LoginLogo
-import com.example.carpoolingapplicationfrontend.viewmodel.AuthUiState
 import com.example.carpoolingapplicationfrontend.viewmodel.AuthViewModel
 
 @Composable
@@ -57,14 +54,14 @@ fun LoginScreen(
     onForgotPasswordClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val loginState by viewModel.loginState.collectAsState()
+    val authState by viewModel.authState.collectAsState()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var localError by remember { mutableStateOf<String?>(null) }
-    val isLoading = loginState is AuthUiState.Loading
+    val isLoading = authState.isLoading
 
-    LaunchedEffect(loginState) {
-        if (loginState is AuthUiState.Success<LoginResponse>) {
+    LaunchedEffect(authState.isLoggedIn) {
+        if (authState.isLoggedIn) {
             onLoginSuccess()
         }
     }
@@ -105,12 +102,12 @@ fun LoginScreen(
                         localError = null
                     },
                     isLoading = isLoading,
-                    errorMessage = localError ?: (loginState as? AuthUiState.Error)?.message,
+                    errorMessage = localError ?: authState.error,
                     onForgotPasswordClick = onForgotPasswordClick,
                     onLoginClick = {
                         if (isValidMonashEmail(email)) {
                             localError = null
-                            viewModel.login(LoginRequest(email.trim(), password))
+                            viewModel.login(email.trim(), password)
                         } else {
                             localError = "Please use a valid Monash email address"
                         }

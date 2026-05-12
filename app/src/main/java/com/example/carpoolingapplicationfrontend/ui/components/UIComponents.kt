@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 val AppPrimaryGreen = Color(0xFF16A34A)
+val ProfileIcon = Icons.Outlined.Person
 
 @Composable
 fun LoginLogo(
@@ -271,6 +274,34 @@ val LockIcon: ImageVector = ImageVector.Builder(
     }
 }.build()
 
+val PhoneIcon: ImageVector = ImageVector.Builder(
+    name = "PhoneIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(8f, 4.5f)
+        horizontalLineTo(16f)
+        quadTo(17.5f, 4.5f, 17.5f, 6f)
+        verticalLineTo(18f)
+        quadTo(17.5f, 19.5f, 16f, 19.5f)
+        horizontalLineTo(8f)
+        quadTo(6.5f, 19.5f, 6.5f, 18f)
+        verticalLineTo(6f)
+        quadTo(6.5f, 4.5f, 8f, 4.5f)
+        close()
+        moveTo(10.5f, 16.5f)
+        horizontalLineTo(13.5f)
+    }
+}.build()
+
 val PersonIcon: ImageVector = ImageVector.Builder(
     name = "PersonIcon",
     defaultWidth = 24.dp,
@@ -329,6 +360,198 @@ val CarIcon: ImageVector = ImageVector.Builder(
         horizontalLineTo(18f)
         moveTo(6f, 12f)
         horizontalLineTo(18f)
+    }
+}.build()
+
+val LocationIcon: ImageVector = ImageVector.Builder(
+    name = "LocationIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(12f, 21f)
+        quadTo(5.5f, 15.5f, 5.5f, 10f)
+        quadTo(5.5f, 4.5f, 12f, 4.5f)
+        quadTo(18.5f, 4.5f, 18.5f, 10f)
+        quadTo(18.5f, 15.5f, 12f, 21f)
+        close()
+        moveTo(12f, 12.2f)
+        quadTo(14.2f, 12.2f, 14.2f, 10f)
+        quadTo(14.2f, 7.8f, 12f, 7.8f)
+        quadTo(9.8f, 7.8f, 9.8f, 10f)
+        quadTo(9.8f, 12.2f, 12f, 12.2f)
+        close()
+    }
+}.build()
+
+val CalendarIcon: ImageVector = ImageVector.Builder(
+    name = "CalendarIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(5f, 5.5f)
+        horizontalLineTo(19f)
+        quadTo(20.5f, 5.5f, 20.5f, 7f)
+        verticalLineTo(19f)
+        quadTo(20.5f, 20.5f, 19f, 20.5f)
+        horizontalLineTo(5f)
+        quadTo(3.5f, 20.5f, 3.5f, 19f)
+        verticalLineTo(7f)
+        quadTo(3.5f, 5.5f, 5f, 5.5f)
+        close()
+        moveTo(8f, 3.5f)
+        verticalLineTo(7.5f)
+        moveTo(16f, 3.5f)
+        verticalLineTo(7.5f)
+        moveTo(3.5f, 10f)
+        horizontalLineTo(20.5f)
+    }
+}.build()
+
+val GroupIcon: ImageVector = ImageVector.Builder(
+    name = "GroupIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(9f, 11f)
+        quadTo(11.5f, 11f, 11.5f, 8.5f)
+        quadTo(11.5f, 6f, 9f, 6f)
+        quadTo(6.5f, 6f, 6.5f, 8.5f)
+        quadTo(6.5f, 11f, 9f, 11f)
+        close()
+        moveTo(3.5f, 19f)
+        quadTo(5f, 14.5f, 9f, 14.5f)
+        quadTo(13f, 14.5f, 14.5f, 19f)
+        moveTo(15f, 11f)
+        quadTo(17f, 11f, 17f, 9f)
+        quadTo(17f, 7f, 15f, 7f)
+        moveTo(14.5f, 14.5f)
+        quadTo(19f, 14.8f, 20.5f, 19f)
+    }
+}.build()
+
+val AddCircleIcon: ImageVector = ImageVector.Builder(
+    name = "AddCircleIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(12f, 21f)
+        quadTo(21f, 21f, 21f, 12f)
+        quadTo(21f, 3f, 12f, 3f)
+        quadTo(3f, 3f, 3f, 12f)
+        quadTo(3f, 21f, 12f, 21f)
+        close()
+        moveTo(12f, 8f)
+        verticalLineTo(16f)
+        moveTo(8f, 12f)
+        horizontalLineTo(16f)
+    }
+}.build()
+
+val ListIcon: ImageVector = ImageVector.Builder(
+    name = "ListIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(8f, 6.5f)
+        horizontalLineTo(20f)
+        moveTo(8f, 12f)
+        horizontalLineTo(20f)
+        moveTo(8f, 17.5f)
+        horizontalLineTo(20f)
+        moveTo(4f, 6.5f)
+        horizontalLineTo(4.1f)
+        moveTo(4f, 12f)
+        horizontalLineTo(4.1f)
+        moveTo(4f, 17.5f)
+        horizontalLineTo(4.1f)
+    }
+}.build()
+
+val NotificationsIcon: ImageVector = ImageVector.Builder(
+    name = "NotificationsIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(18f, 10.5f)
+        quadTo(18f, 6f, 12f, 6f)
+        quadTo(6f, 6f, 6f, 10.5f)
+        verticalLineTo(14.5f)
+        lineTo(4.5f, 17f)
+        horizontalLineTo(19.5f)
+        lineTo(18f, 14.5f)
+        verticalLineTo(10.5f)
+        close()
+        moveTo(10f, 19f)
+        quadTo(12f, 21f, 14f, 19f)
+    }
+}.build()
+
+val ArrowBackIcon: ImageVector = ImageVector.Builder(
+    name = "ArrowBackIcon",
+    defaultWidth = 24.dp,
+    defaultHeight = 24.dp,
+    viewportWidth = 24f,
+    viewportHeight = 24f
+).apply {
+    path(
+        stroke = SolidColor(Color.Black),
+        strokeLineWidth = 2f,
+        strokeLineCap = StrokeCap.Round,
+        strokeLineJoin = StrokeJoin.Round
+    ) {
+        moveTo(19f, 12f)
+        horizontalLineTo(5f)
+        moveTo(12f, 5f)
+        lineTo(5f, 12f)
+        lineTo(12f, 19f)
     }
 }.build()
 

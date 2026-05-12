@@ -72,6 +72,10 @@ fun RegisterScreen(
     var vehiclePlate by remember { mutableStateOf("") }
     var localError by remember { mutableStateOf<String?>(null) }
 
+    LaunchedEffect(Unit) {
+        viewModel.resetRegisterState()
+    }
+
     LaunchedEffect(registerState) {
         if (registerState is AuthUiState.Success<RegisterResponse>) {
             onRegisterSuccess()
@@ -141,14 +145,15 @@ fun RegisterScreen(
 
                         if (validationError == null) {
                             localError = null
+
                             viewModel.register(
                                 RegisterRequest(
-                                    fullName.trim(),
-                                    email.trim(),
-                                    password,
-                                    vehicleMake.trim(),
-                                    vehicleModel.trim(),
-                                    vehiclePlate.trim()
+                                    name = fullName.trim(),
+                                    email = email.trim(),
+                                    password = password,
+                                    vehicleMake = vehicleMake.trim().takeIf { it.isNotBlank() },
+                                    vehicleModel = vehicleModel.trim().takeIf { it.isNotBlank() },
+                                    vehiclePlate = vehiclePlate.trim().takeIf { it.isNotBlank() }
                                 )
                             )
                         } else {

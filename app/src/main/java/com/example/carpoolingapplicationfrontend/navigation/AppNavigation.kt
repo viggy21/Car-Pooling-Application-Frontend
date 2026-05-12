@@ -1,34 +1,48 @@
 package com.example.carpoolingapplicationfrontend.navigation
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.carpoolingapplicationfrontend.ui.screens.CreateRideScreen
 import com.example.carpoolingapplicationfrontend.ui.screens.ForgotPasswordScreen
 import com.example.carpoolingapplicationfrontend.ui.screens.HomeScreen
 import com.example.carpoolingapplicationfrontend.ui.screens.LoginScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.MainScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.MatchDetailsScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.MyRidesScreen
+import com.example.carpoolingapplicationfrontend.ui.screens.ProfileScreen
 import com.example.carpoolingapplicationfrontend.ui.screens.RegisterScreen
 import com.example.carpoolingapplicationfrontend.viewmodel.AuthViewModel
+import com.example.carpoolingapplicationfrontend.viewmodel.BookingViewModel
+import com.example.carpoolingapplicationfrontend.ui.screens.RideDetailsScreen
 
 @Composable
 fun App() {
     val navController = rememberNavController()
-    AppNavHost(navController = navController)
+    //AppNavHost(navController = navController)
+    MainScreen(navController = navController)
 }
 
 @Composable
 fun AppNavHost(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    paddingValues: PaddingValues,
+    authViewModel: AuthViewModel
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Login.route
+        startDestination = Screen.Login.route,
+        modifier = Modifier.padding(paddingValues)
     ) {
         composable(Screen.Login.route) {
-            val authViewModel: AuthViewModel = viewModel()
-
             LoginScreen(
                 viewModel = authViewModel,
                 onLoginSuccess = {
@@ -48,12 +62,71 @@ fun AppNavHost(
         }
 
         composable(Screen.Home.route) {
-            HomeScreen()
+            val bookingViewModel: BookingViewModel = viewModel()
+
+            HomeScreen(
+                viewModel = bookingViewModel,
+                onViewRideDetails = { rideId ->
+                    navController.navigate(Screen.RideDetails.createRoute(rideId))
+                },
+                onViewMatch = { matchId ->
+                    navController.navigate(Screen.MatchDetails.createRoute(matchId))
+                },
+                onOfferRide = {
+                    navController.navigate(Screen.CreateRide.route)
+                },
+                onRequestRide = {
+                    navController.navigate(Screen.CreateRide.route)
+                },
+                onViewMyRides = {
+                    navController.navigate(Screen.MyRides.route)
+                }
+            )
+        }
+
+        composable(
+            route = Screen.MatchDetails.route,
+            arguments = listOf(navArgument("matchId") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val bookingViewModel: BookingViewModel = viewModel()
+            val matchId = backStackEntry.arguments?.getString("matchId").orEmpty()
+
+            MatchDetailsScreen(
+                matchId = matchId,
+                viewModel = bookingViewModel,
+                onAcceptClick = {
+                    navController.popBackStack()
+                },
+                onDeclineClick = {
+                    navController.popBackStack()
+                },
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(
+            route = Screen.RideDetails.route,
+            arguments = listOf(
+                navArgument("rideId") {
+                    type = NavType.StringType
+                }
+            )
+        ) { backStackEntry ->
+
+            val rideId =
+                backStackEntry.arguments?.getString("rideId") ?: ""
+
+            RideDetailsScreen(
+                rideId = rideId,
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         composable(Screen.Register.route) {
-            val authViewModel: AuthViewModel = viewModel()
-
             RegisterScreen(
                 viewModel = authViewModel,
                 onRegisterSuccess = {
@@ -75,6 +148,52 @@ fun AppNavHost(
 
         composable(Screen.ForgotPassword.route) {
             ForgotPasswordScreen()
+        }
+
+        composable(Screen.CreateRide.route) {
+            val bookingViewModel: BookingViewModel = viewModel()
+
+            CreateRideScreen(
+                viewModel = bookingViewModel,
+                userId = authViewModel.getCurrentUserId(),
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onRideCreated = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable(Screen.MyRides.route) {
+            MyRidesScreen(
+                onRideClick = { rideId ->
+                    navController.navigate(Screen.RideDetails.createRoute(rideId))
+                }
+            )
+        }
+
+        composable(Screen.Profile.route) {
+            ProfileScreen(
+                authViewModel = authViewModel,
+                onEditProfileClick = {
+
+                },
+                onVehicleInfoClick = {
+
+                },
+                onChangePasswordClick = {
+
+                },
+                onLogout = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
         }
     }
 }

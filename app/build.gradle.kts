@@ -1,3 +1,5 @@
+
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -67,4 +69,14 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.kotlinx.coroutines.android)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+
+    // Include extended Icons
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.material.icons.extended)
+
+    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("com.google.android.libraries.places:places:3.5.0")
+
 }
