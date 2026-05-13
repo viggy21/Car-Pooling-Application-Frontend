@@ -42,6 +42,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,9 +56,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.carpoolingapplicationfrontend.data.models.BookingStatus
 import com.example.carpoolingapplicationfrontend.ui.components.AppPrimaryGreen
+import com.example.carpoolingapplicationfrontend.viewmodel.BookingRequestUiState
+import com.example.carpoolingapplicationfrontend.viewmodel.BookingViewModel
 import com.example.carpoolingapplicationfrontend.viewmodel.RideDetailsUiModel
 import com.example.carpoolingapplicationfrontend.viewmodel.RideUiModel
+import com.example.carpoolingapplicationfrontend.viewmodel.StartTripUiState
 
 enum class RideStatus {
     NOT_STARTED,
@@ -95,13 +101,36 @@ data class VehicleUiModel(
 fun RideDetailsScreen(
     rideId: String,
     ride: RideDetailsUiModel?,
+    bookingViewModel: BookingViewModel,
     onBackClick: () -> Unit
 ) {
 
+    val startTripState = bookingViewModel.startTripState.collectAsState().value
+    val endTripState = bookingViewModel.endTripState.collectAsState().value
 
-    var rideStatus by rememberSaveable {
-        mutableStateOf(RideStatus.NOT_STARTED)
+    LaunchedEffect(startTripState) {
+
+        if (startTripState is StartTripUiState.Success) {
+
+            bookingViewModel.getBookingById(rideId.toLong())
+
+            bookingViewModel.resetStartTripState()
+        }
     }
+
+    LaunchedEffect(endTripState) {
+
+        if (endTripState is BookingRequestUiState.Success) {
+
+            bookingViewModel.getBookingById(rideId.toLong())
+
+            bookingViewModel.resetEndTripState()
+        }
+    }
+
+//    var rideStatus by rememberSaveable {
+//        mutableStateOf(RideStatus.NOT_STARTED)
+//    }
 
 //    val ride = RideDetailsUiModel(
 //        id = rideId,
@@ -134,6 +163,15 @@ fun RideDetailsScreen(
             Text("Loading ride details...")
         }
         return
+    }
+
+    val rideStatus = when (ride.ride_status) {
+
+        BookingStatus.ONGOING -> RideStatus.IN_PROGRESS
+
+        BookingStatus.COMPLETED -> RideStatus.COMPLETED
+
+        else -> RideStatus.NOT_STARTED
     }
 
     LazyColumn(
@@ -173,14 +211,16 @@ fun RideDetailsScreen(
 
                 RideActionSection(
                     rideStatus = rideStatus,
+
                     onStartRide = {
-                        rideStatus = RideStatus.IN_PROGRESS
+                        bookingViewModel.startTrip(ride.id)
                     },
+
                     onCompleteRide = {
-                        rideStatus = RideStatus.COMPLETED
+                        bookingViewModel.endTrip(ride.id)
                     },
+
                     onCancelRide = {
-                        // TODO: Backend cancel ride API call
                         onBackClick()
                     }
                 )

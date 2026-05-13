@@ -183,6 +183,7 @@ fun AppNavHost(
             RideDetailsScreen(
                 rideId = rideId,
                 ride = ride,
+                bookingViewModel,
                 onBackClick = {
                     navController.popBackStack()
                 }

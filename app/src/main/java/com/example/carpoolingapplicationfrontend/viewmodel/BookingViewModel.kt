@@ -85,6 +85,7 @@ data class RideUiModel(
 data class RideDetailsUiModel(
     val id: String,
     val type: String,
+    val ride_status: Int,
     val from: String,
     val to: String,
     val date: String,
@@ -591,6 +592,7 @@ fun BookingDto.toRideDetailsUiModel(): RideDetailsUiModel {
     return RideDetailsUiModel(
         id = id.toString(),
         type = if (role == 0) "offer" else "request",
+        ride_status = status,
         from = originName,
         to = destName,
         date = date,
