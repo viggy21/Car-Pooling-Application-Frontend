@@ -80,7 +80,7 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 
-private const val GOOGLE_PLACES_API_KEY = "AIzaSyCdP0eFLgk3tWXMi6CHWsIEjvT4RZY8KbA"
+private const val GOOGLE_PLACES_API_KEY = "INSERT_KEY"
 
 data class PlacePredictionUiModel(
     val placeId: String,
