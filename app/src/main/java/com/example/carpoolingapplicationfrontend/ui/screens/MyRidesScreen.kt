@@ -50,6 +50,15 @@ import com.example.carpoolingapplicationfrontend.ui.components.GroupIcon
 import com.example.carpoolingapplicationfrontend.ui.components.LocationIcon
 import com.example.carpoolingapplicationfrontend.ui.components.ProfileIcon
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.carpoolingapplicationfrontend.data.models.BookingStatus
+import com.example.carpoolingapplicationfrontend.viewmodel.BookingRequestUiState
+import com.example.carpoolingapplicationfrontend.viewmodel.BookingViewModel
+import com.example.carpoolingapplicationfrontend.viewmodel.RideUiModel
+import com.example.carpoolingapplicationfrontend.data.models.PageQueryRequest
+
 enum class RideTab(
     val title: String
 ) {
@@ -59,117 +68,216 @@ enum class RideTab(
     CANCELLED("Cancelled")
 }
 
-data class MyRideUiModel(
-    val id: String,
-    val type: RideType,
-    val from: String,
-    val to: String,
-    val date: String,
-    val time: String,
-    val seats: Int? = null,
-    val passengers: Int? = null,
-    val driver: String? = null,
-    val cost: String? = null,
-    val energy: String? = null,
-    val co2: String? = null,
-    val cancellationReason: String? = null
-)
+//data class MyRideUiModel(
+//    val id: String,
+//    val type: RideType,
+//    val from: String,
+//    val to: String,
+//    val date: String,
+//    val time: String,
+//    val seats: Int? = null,
+//    val passengers: Int? = null,
+//    val driver: String? = null,
+//    val cost: String? = null,
+//    val energy: String? = null,
+//    val co2: String? = null,
+//    val cancellationReason: String? = null
+//)
 
 enum class RideType {
     OFFER,
     REQUEST
 }
 
+//@Composable
+//fun MyRidesScreen(
+//    onRideClick: (String) -> Unit,
+//    modifier: Modifier = Modifier
+//) {
+//
+//    var selectedTab by remember {
+//        mutableStateOf(RideTab.UPCOMING)
+//    }
+//
+//    val rides = remember {
+//        mapOf(
+//            RideTab.UPCOMING to listOf(
+//                MyRideUiModel(
+//                    id = "1",
+//                    type = RideType.OFFER,
+//                    from = "Clayton Campus",
+//                    to = "Caulfield Campus",
+//                    date = "2026-05-03",
+//                    time = "09:00 AM",
+//                    seats = 3,
+//                    passengers = 2
+//                ),
+//                MyRideUiModel(
+//                    id = "2",
+//                    type = RideType.REQUEST,
+//                    from = "Home",
+//                    to = "Clayton Campus",
+//                    date = "2026-05-05",
+//                    time = "08:30 AM",
+//                    driver = "John Smith"
+//                )
+//            ),
+//
+//            RideTab.IN_PROGRESS to listOf(
+//                MyRideUiModel(
+//                    id = "3",
+//                    type = RideType.OFFER,
+//                    from = "Clayton Campus",
+//                    to = "Melbourne CBD",
+//                    date = "2026-05-02",
+//                    time = "05:00 PM",
+//                    seats = 4,
+//                    passengers = 3
+//                )
+//            ),
+//
+//            RideTab.COMPLETED to listOf(
+//                MyRideUiModel(
+//                    id = "4",
+//                    type = RideType.OFFER,
+//                    from = "Clayton Campus",
+//                    to = "Caulfield Campus",
+//                    date = "2026-04-28",
+//                    time = "09:00 AM",
+//                    seats = 3,
+//                    passengers = 3,
+//                    cost = "$12.50",
+//                    energy = "2.5 kWh",
+//                    co2 = "1.8 kg"
+//                ),
+//                MyRideUiModel(
+//                    id = "5",
+//                    type = RideType.REQUEST,
+//                    from = "Home",
+//                    to = "Clayton Campus",
+//                    date = "2026-04-25",
+//                    time = "08:30 AM",
+//                    driver = "Emma Wilson",
+//                    cost = "$8.00",
+//                    energy = "1.8 kWh",
+//                    co2 = "1.2 kg"
+//                )
+//            ),
+//
+//            RideTab.CANCELLED to listOf(
+//                MyRideUiModel(
+//                    id = "6",
+//                    type = RideType.OFFER,
+//                    from = "Clayton Campus",
+//                    to = "Caulfield Campus",
+//                    date = "2026-04-20",
+//                    time = "09:00 AM",
+//                    cancellationReason = "Weather conditions"
+//                )
+//            )
+//        )
+//    }
+//
+//    val currentRides = rides[selectedTab].orEmpty()
+//
+//    Column(
+//        modifier = modifier
+//            .fillMaxSize()
+//            .background(Color(0xFFF3F4F6))
+//    ) {
+//
+//        MyRidesHeader()
+//
+//        RideTabs(
+//            selectedTab = selectedTab,
+//            onTabSelected = {
+//                selectedTab = it
+//            }
+//        )
+//
+//        if (currentRides.isEmpty()) {
+//            EmptyRidesCard(
+//                selectedTab = selectedTab
+//            )
+//        } else {
+//            LazyColumn(
+//                modifier = Modifier.fillMaxSize(),
+//                contentPadding = androidx.compose.foundation.layout.PaddingValues(
+//                    horizontal = 16.dp,
+//                    vertical = 20.dp
+//                ),
+//                verticalArrangement = Arrangement.spacedBy(16.dp)
+//            ) {
+//                items(currentRides) { ride ->
+//                    MyRideCard(
+//                        ride = ride,
+//                        selectedTab = selectedTab,
+//                        onClick = {
+//                            onRideClick(ride.id)
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
+
 @Composable
 fun MyRidesScreen(
+    currentUserId: Long,
     onRideClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: BookingViewModel = viewModel()
 ) {
 
     var selectedTab by remember {
         mutableStateOf(RideTab.UPCOMING)
     }
 
-    val rides = remember {
-        mapOf(
-            RideTab.UPCOMING to listOf(
-                MyRideUiModel(
-                    id = "1",
-                    type = RideType.OFFER,
-                    from = "Clayton Campus",
-                    to = "Caulfield Campus",
-                    date = "2026-05-03",
-                    time = "09:00 AM",
-                    seats = 3,
-                    passengers = 2
-                ),
-                MyRideUiModel(
-                    id = "2",
-                    type = RideType.REQUEST,
-                    from = "Home",
-                    to = "Clayton Campus",
-                    date = "2026-05-05",
-                    time = "08:30 AM",
-                    driver = "John Smith"
-                )
-            ),
-
-            RideTab.IN_PROGRESS to listOf(
-                MyRideUiModel(
-                    id = "3",
-                    type = RideType.OFFER,
-                    from = "Clayton Campus",
-                    to = "Melbourne CBD",
-                    date = "2026-05-02",
-                    time = "05:00 PM",
-                    seats = 4,
-                    passengers = 3
-                )
-            ),
-
-            RideTab.COMPLETED to listOf(
-                MyRideUiModel(
-                    id = "4",
-                    type = RideType.OFFER,
-                    from = "Clayton Campus",
-                    to = "Caulfield Campus",
-                    date = "2026-04-28",
-                    time = "09:00 AM",
-                    seats = 3,
-                    passengers = 3,
-                    cost = "$12.50",
-                    energy = "2.5 kWh",
-                    co2 = "1.8 kg"
-                ),
-                MyRideUiModel(
-                    id = "5",
-                    type = RideType.REQUEST,
-                    from = "Home",
-                    to = "Clayton Campus",
-                    date = "2026-04-25",
-                    time = "08:30 AM",
-                    driver = "Emma Wilson",
-                    cost = "$8.00",
-                    energy = "1.8 kWh",
-                    co2 = "1.2 kg"
-                )
-            ),
-
-            RideTab.CANCELLED to listOf(
-                MyRideUiModel(
-                    id = "6",
-                    type = RideType.OFFER,
-                    from = "Clayton Campus",
-                    to = "Caulfield Campus",
-                    date = "2026-04-20",
-                    time = "09:00 AM",
-                    cancellationReason = "Weather conditions"
-                )
+    LaunchedEffect(currentUserId) {
+        viewModel.getBookingsByUserId(
+            id = currentUserId,
+            request = PageQueryRequest(
+                pageNum = 1,
+                pageSize = 50,
+                userId = currentUserId
             )
         )
     }
 
-    val currentRides = rides[selectedTab].orEmpty()
+    val userBookingsState = viewModel.userBookingsState.collectAsState().value
+
+    val allRides = when (userBookingsState) {
+
+        is BookingRequestUiState.Success -> {
+            viewModel.getAllRideUiModels(userBookingsState)
+        }
+
+        else -> emptyList()
+    }
+
+    val currentRides = allRides.filter { ride ->
+
+        when (selectedTab) {
+
+            RideTab.UPCOMING -> {
+                ride.ride_status == BookingStatus.REQUESTED ||
+                        ride.ride_status == BookingStatus.MATCHED
+            }
+
+            RideTab.IN_PROGRESS -> {
+                ride.ride_status == BookingStatus.ONGOING
+            }
+
+            RideTab.COMPLETED -> {
+                ride.ride_status == BookingStatus.COMPLETED
+            }
+
+            RideTab.CANCELLED -> {
+                ride.ride_status == BookingStatus.CANCELLED
+            }
+        }
+    }
 
     Column(
         modifier = modifier
@@ -187,10 +295,13 @@ fun MyRidesScreen(
         )
 
         if (currentRides.isEmpty()) {
+
             EmptyRidesCard(
                 selectedTab = selectedTab
             )
+
         } else {
+
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(
@@ -199,7 +310,9 @@ fun MyRidesScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+
                 items(currentRides) { ride ->
+
                     MyRideCard(
                         ride = ride,
                         selectedTab = selectedTab,
@@ -310,10 +423,218 @@ private fun RideTabs(
         }
     }
 }
-
+//
+//@Composable
+//private fun MyRideCard(
+//    ride: MyRideUiModel,
+//    selectedTab: RideTab,
+//    onClick: () -> Unit
+//) {
+//
+//    Card(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .clickable(onClick = onClick),
+//        shape = RoundedCornerShape(18.dp),
+//        colors = CardDefaults.cardColors(
+//            containerColor = Color.White
+//        ),
+//        elevation = CardDefaults.cardElevation(
+//            defaultElevation = 5.dp
+//        )
+//    ) {
+//
+//        Column(
+//            modifier = Modifier.padding(20.dp)
+//        ) {
+//
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//
+//                RideTypeBadge(type = ride.type)
+//
+//                if (selectedTab == RideTab.COMPLETED && ride.cost != null) {
+//                    Text(
+//                        text = ride.cost,
+//                        color = AppPrimaryGreen,
+//                        style = MaterialTheme.typography.bodyLarge,
+//                        fontWeight = FontWeight.Bold
+//                    )
+//                }
+//            }
+//
+//            Spacer(modifier = Modifier.height(18.dp))
+//
+//            RideRoute(
+//                from = ride.from,
+//                to = ride.to
+//            )
+//
+//            Spacer(modifier = Modifier.height(18.dp))
+//
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                horizontalArrangement = Arrangement.SpaceBetween,
+//                verticalAlignment = Alignment.CenterVertically
+//            ) {
+//
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//
+//                    Icon(
+//                        imageVector = CalendarIcon,
+//                        contentDescription = null,
+//                        tint = Color(0xFF6B7280),
+//                        modifier = Modifier.size(18.dp)
+//                    )
+//
+//                    Spacer(modifier = Modifier.width(8.dp))
+//
+//                    Text(
+//                        text = ride.date,
+//                        color = Color(0xFF6B7280),
+//                        style = MaterialTheme.typography.bodyMedium,
+//                        fontWeight = FontWeight.SemiBold
+//                    )
+//
+//                    Text(
+//                        text = "  •  ",
+//                        color = Color(0xFF9CA3AF)
+//                    )
+//
+//                    Text(
+//                        text = ride.time,
+//                        color = Color(0xFF6B7280),
+//                        style = MaterialTheme.typography.bodyMedium,
+//                        fontWeight = FontWeight.SemiBold
+//                    )
+//                }
+//
+//                when {
+//                    ride.type == RideType.OFFER &&
+//                            ride.passengers != null &&
+//                            ride.seats != null -> {
+//
+//                        Row(
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//
+//                            Icon(
+//                                imageVector = GroupIcon,
+//                                contentDescription = null,
+//                                tint = Color(0xFF6B7280),
+//                                modifier = Modifier.size(18.dp)
+//                            )
+//
+//                            Spacer(modifier = Modifier.width(6.dp))
+//
+//                            Text(
+//                                text = "${ride.passengers}/${ride.seats}",
+//                                color = Color(0xFF6B7280),
+//                                style = MaterialTheme.typography.bodyMedium,
+//                                fontWeight = FontWeight.SemiBold
+//                            )
+//                        }
+//                    }
+//
+//                    ride.type == RideType.REQUEST &&
+//                            ride.driver != null -> {
+//
+//                        Row(
+//                            verticalAlignment = Alignment.CenterVertically
+//                        ) {
+//
+//                            Icon(
+//                                imageVector = ProfileIcon,
+//                                contentDescription = null,
+//                                tint = Color(0xFF6B7280),
+//                                modifier = Modifier.size(18.dp)
+//                            )
+//
+//                            Spacer(modifier = Modifier.width(6.dp))
+//
+//                            Text(
+//                                text = ride.driver,
+//                                color = Color(0xFF6B7280),
+//                                style = MaterialTheme.typography.bodyMedium,
+//                                fontWeight = FontWeight.SemiBold,
+//                                maxLines = 1,
+//                                overflow = TextOverflow.Ellipsis
+//                            )
+//                        }
+//                    }
+//                }
+//            }
+//
+//            if (
+//                selectedTab == RideTab.COMPLETED &&
+//                ride.energy != null &&
+//                ride.co2 != null
+//            ) {
+//
+//                Spacer(modifier = Modifier.height(16.dp))
+//
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(1.dp)
+//                        .background(Color(0xFFF1F5F9))
+//                )
+//
+//                Spacer(modifier = Modifier.height(14.dp))
+//
+//                Row(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+//                ) {
+//
+//                    StatsItem(
+//                        value = ride.energy,
+//                        label = "Energy saved",
+//                        modifier = Modifier.weight(1f)
+//                    )
+//
+//                    StatsItem(
+//                        value = ride.co2,
+//                        label = "CO₂ reduced",
+//                        modifier = Modifier.weight(1f)
+//                    )
+//                }
+//            }
+//
+//            if (
+//                selectedTab == RideTab.CANCELLED &&
+//                ride.cancellationReason != null
+//            ) {
+//
+//                Spacer(modifier = Modifier.height(16.dp))
+//
+//                Box(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clip(RoundedCornerShape(10.dp))
+//                        .background(Color(0xFFFEF2F2))
+//                        .padding(12.dp)
+//                ) {
+//
+//                    Text(
+//                        text = "Cancelled: ${ride.cancellationReason}",
+//                        color = Color(0xFFB91C1C),
+//                        style = MaterialTheme.typography.bodySmall,
+//                        fontWeight = FontWeight.SemiBold
+//                    )
+//                }
+//            }
+//        }
+//    }
+//}
 @Composable
 private fun MyRideCard(
-    ride: MyRideUiModel,
+    ride: RideUiModel,
     selectedTab: RideTab,
     onClick: () -> Unit
 ) {
@@ -341,162 +662,55 @@ private fun MyRideCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                RideTypeBadge(type = ride.type)
-
-                if (selectedTab == RideTab.COMPLETED && ride.cost != null) {
-                    Text(
-                        text = ride.cost,
-                        color = AppPrimaryGreen,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                RideStatusBadge(
+                    status = ride.ride_type
+                )
             }
 
             Spacer(modifier = Modifier.height(18.dp))
 
             RideRoute(
-                from = ride.from,
-                to = ride.to
+                from = ride.fromLocation,
+                to = ride.toLocation
             )
 
             Spacer(modifier = Modifier.height(18.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-
-                    Icon(
-                        imageVector = CalendarIcon,
-                        contentDescription = null,
-                        tint = Color(0xFF6B7280),
-                        modifier = Modifier.size(18.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = ride.date,
-                        color = Color(0xFF6B7280),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Text(
-                        text = "  •  ",
-                        color = Color(0xFF9CA3AF)
-                    )
-
-                    Text(
-                        text = ride.time,
-                        color = Color(0xFF6B7280),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                when {
-                    ride.type == RideType.OFFER &&
-                            ride.passengers != null &&
-                            ride.seats != null -> {
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Icon(
-                                imageVector = GroupIcon,
-                                contentDescription = null,
-                                tint = Color(0xFF6B7280),
-                                modifier = Modifier.size(18.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(6.dp))
-
-                            Text(
-                                text = "${ride.passengers}/${ride.seats}",
-                                color = Color(0xFF6B7280),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                        }
-                    }
-
-                    ride.type == RideType.REQUEST &&
-                            ride.driver != null -> {
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-
-                            Icon(
-                                imageVector = ProfileIcon,
-                                contentDescription = null,
-                                tint = Color(0xFF6B7280),
-                                modifier = Modifier.size(18.dp)
-                            )
-
-                            Spacer(modifier = Modifier.width(6.dp))
-
-                            Text(
-                                text = ride.driver,
-                                color = Color(0xFF6B7280),
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.SemiBold,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (
-                selectedTab == RideTab.COMPLETED &&
-                ride.energy != null &&
-                ride.co2 != null
-            ) {
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(1.dp)
-                        .background(Color(0xFFF1F5F9))
+                Icon(
+                    imageVector = CalendarIcon,
+                    contentDescription = null,
+                    tint = Color(0xFF6B7280),
+                    modifier = Modifier.size(18.dp)
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
+                Text(
+                    text = ride.date,
+                    color = Color(0xFF6B7280),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
 
-                    StatsItem(
-                        value = ride.energy,
-                        label = "Energy saved",
-                        modifier = Modifier.weight(1f)
-                    )
+                Text(
+                    text = "  •  ",
+                    color = Color(0xFF9CA3AF)
+                )
 
-                    StatsItem(
-                        value = ride.co2,
-                        label = "CO₂ reduced",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                Text(
+                    text = ride.time,
+                    color = Color(0xFF6B7280),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
-            if (
-                selectedTab == RideTab.CANCELLED &&
-                ride.cancellationReason != null
-            ) {
+            if (!ride.remark.isNullOrBlank()) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -504,34 +718,71 @@ private fun MyRideCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFFEF2F2))
+                        .background(Color(0xFFF9FAFB))
                         .padding(12.dp)
                 ) {
 
                     Text(
-                        text = "Cancelled: ${ride.cancellationReason}",
-                        color = Color(0xFFB91C1C),
-                        style = MaterialTheme.typography.bodySmall,
-                        fontWeight = FontWeight.SemiBold
+                        text = ride.remark,
+                        color = Color(0xFF4B5563),
+                        style = MaterialTheme.typography.bodyMedium
                     )
                 }
             }
         }
     }
 }
-
+//
+//@Composable
+//private fun RideTypeBadge(
+//    type: RideType
+//) {
+//
+//    val backgroundColor = if (type == RideType.OFFER) {
+//        Color(0xFFDCFCE7)
+//    } else {
+//        Color(0xFFDBEAFE)
+//    }
+//
+//    val textColor = if (type == RideType.OFFER) {
+//        Color(0xFF15803D)
+//    } else {
+//        Color(0xFF1D4ED8)
+//    }
+//
+//    Box(
+//        modifier = Modifier
+//            .clip(RoundedCornerShape(50))
+//            .background(backgroundColor)
+//            .padding(horizontal = 14.dp, vertical = 7.dp)
+//    ) {
+//
+//        Text(
+//            text = if (type == RideType.OFFER) {
+//                "Offering"
+//            } else {
+//                "Requesting"
+//            },
+//            color = textColor,
+//            style = MaterialTheme.typography.labelMedium,
+//            fontWeight = FontWeight.Bold
+//        )
+//    }
+//}
 @Composable
-private fun RideTypeBadge(
-    type: RideType
+private fun RideStatusBadge(
+    status: String
 ) {
 
-    val backgroundColor = if (type == RideType.OFFER) {
+    val isOffering = status.equals("Offering", true)
+
+    val backgroundColor = if (isOffering) {
         Color(0xFFDCFCE7)
     } else {
         Color(0xFFDBEAFE)
     }
 
-    val textColor = if (type == RideType.OFFER) {
+    val textColor = if (isOffering) {
         Color(0xFF15803D)
     } else {
         Color(0xFF1D4ED8)
@@ -545,11 +796,7 @@ private fun RideTypeBadge(
     ) {
 
         Text(
-            text = if (type == RideType.OFFER) {
-                "Offering"
-            } else {
-                "Requesting"
-            },
+            text = status,
             color = textColor,
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold

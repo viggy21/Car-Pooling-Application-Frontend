@@ -3,6 +3,8 @@ package com.example.carpoolingapplicationfrontend.navigation
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -23,6 +25,9 @@ import com.example.carpoolingapplicationfrontend.ui.screens.RegisterScreen
 import com.example.carpoolingapplicationfrontend.viewmodel.AuthViewModel
 import com.example.carpoolingapplicationfrontend.viewmodel.BookingViewModel
 import com.example.carpoolingapplicationfrontend.ui.screens.RideDetailsScreen
+import com.example.carpoolingapplicationfrontend.viewmodel.BookingRequestUiState
+import com.example.carpoolingapplicationfrontend.viewmodel.RideDetailsUiModel
+import com.example.carpoolingapplicationfrontend.viewmodel.toRideDetailsUiModel
 
 @Composable
 fun App() {
@@ -37,6 +42,8 @@ fun AppNavHost(
     paddingValues: PaddingValues,
     authViewModel: AuthViewModel
 ) {
+    val bookingViewModel: BookingViewModel = viewModel()
+
     NavHost(
         navController = navController,
         startDestination = Screen.Login.route,
@@ -62,10 +69,11 @@ fun AppNavHost(
         }
 
         composable(Screen.Home.route) {
-            val bookingViewModel: BookingViewModel = viewModel()
+            //val bookingViewModel: BookingViewModel = viewModel()
 
             HomeScreen(
                 viewModel = bookingViewModel,
+                currentUserId = authViewModel.getCurrentUserId() ?: -1L,
                 onViewRideDetails = { rideId ->
                     navController.navigate(Screen.RideDetails.createRoute(rideId))
                 },
@@ -88,7 +96,7 @@ fun AppNavHost(
             route = Screen.MatchDetails.route,
             arguments = listOf(navArgument("matchId") { type = NavType.StringType })
         ) { backStackEntry ->
-            val bookingViewModel: BookingViewModel = viewModel()
+            //val bookingViewModel: BookingViewModel = viewModel()
             val matchId = backStackEntry.arguments?.getString("matchId").orEmpty()
 
             MatchDetailsScreen(
@@ -106,6 +114,46 @@ fun AppNavHost(
             )
         }
 
+//        composable(
+//            route = Screen.RideDetails.route,
+//            arguments = listOf(
+//                navArgument("rideId") {
+//                    type = NavType.StringType
+//                }
+//            )
+//        ) { backStackEntry ->
+//
+//            val rideId =
+//                backStackEntry.arguments?.getString("rideId") ?: ""
+//
+////            RideDetailsScreen(
+////                rideId = rideId,
+////                onBackClick = {
+////                    navController.popBackStack()
+////                }
+////            )
+//            //val bookingViewModel: BookingViewModel = viewModel()
+//
+//            LaunchedEffect(rideId) {
+//                bookingViewModel.getBookingById(rideId.toLong())
+//            }
+//
+////            val rideState = bookingViewModel.bookingDetailState
+////
+////            val rideUiModel = bookingViewModel.getRideByIdUiModel(rideState)
+//            val rideState = bookingViewModel.bookingDetailState.collectAsState().value
+//            val rideUiModel = bookingViewModel.getRideByIdUiModel(
+//                BookingRequestUiState.Success(rideState.response)
+//            )
+//
+//            RideDetailsScreen(
+//                rideId = rideId,
+//                ride = rideUiModel,
+//                onBackClick = {
+//                    navController.popBackStack()
+//                }
+//            )
+//        }
         composable(
             route = Screen.RideDetails.route,
             arguments = listOf(
@@ -115,11 +163,26 @@ fun AppNavHost(
             )
         ) { backStackEntry ->
 
-            val rideId =
-                backStackEntry.arguments?.getString("rideId") ?: ""
+            val rideId = backStackEntry.arguments?.getString("rideId") ?: ""
+
+            LaunchedEffect(rideId) {
+                bookingViewModel.getBookingById(rideId.toLong())
+            }
+
+            val rideState = bookingViewModel.bookingDetailState.collectAsState().value
+
+            val ride: RideDetailsUiModel? = when (rideState) {
+
+                is BookingRequestUiState.Success -> {
+                    rideState.response.data?.toRideDetailsUiModel()
+                }
+
+                else -> null
+            }
 
             RideDetailsScreen(
                 rideId = rideId,
+                ride = ride,
                 onBackClick = {
                     navController.popBackStack()
                 }
@@ -151,7 +214,7 @@ fun AppNavHost(
         }
 
         composable(Screen.CreateRide.route) {
-            val bookingViewModel: BookingViewModel = viewModel()
+            //val bookingViewModel: BookingViewModel = viewModel()
 
             CreateRideScreen(
                 viewModel = bookingViewModel,
@@ -166,7 +229,14 @@ fun AppNavHost(
         }
 
         composable(Screen.MyRides.route) {
+//            MyRidesScreen(
+//                onRideClick = { rideId ->
+//                    navController.navigate(Screen.RideDetails.createRoute(rideId))
+//                }
+//            )
             MyRidesScreen(
+                currentUserId = authViewModel.getCurrentUserId() ?: -1L,
+                viewModel = bookingViewModel,
                 onRideClick = { rideId ->
                     navController.navigate(Screen.RideDetails.createRoute(rideId))
                 }

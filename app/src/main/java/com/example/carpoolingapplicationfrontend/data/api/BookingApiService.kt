@@ -7,6 +7,7 @@ import com.example.carpoolingapplicationfrontend.data.models.CreateBookingReques
 import com.example.carpoolingapplicationfrontend.data.models.CreateBookingResponse
 import com.example.carpoolingapplicationfrontend.data.models.EndTripResponse
 import com.example.carpoolingapplicationfrontend.data.models.MatchedBookingsResponse
+import com.example.carpoolingapplicationfrontend.data.models.PageQueryRequest
 import com.example.carpoolingapplicationfrontend.data.models.PrematchResponse
 import com.example.carpoolingapplicationfrontend.data.models.RejectMatchResponse
 import com.example.carpoolingapplicationfrontend.data.models.SaveLocationRequest
@@ -76,13 +77,10 @@ interface BookingApiService {
         @Query("totalSize") totalSize: Int?
     ): Response<SearchBookingsResponse>
 
-    @GET("api/user/booking/query/userid/{id}")
+    @POST("api/user/booking/query/userid/{id}")
     suspend fun getBookingsByUserId(
         @Path("id") id: Long,
-        @Query("pageNum") pageNum: Int,
-        @Query("pageSize") pageSize: Int,
-        @Query("totalSize") totalSize: Int?,
-        @Query("userId") userId: Long
+        @Body request: PageQueryRequest
     ): Response<UserBookingsResponse>
 
     @GET("api/user/booking/query/booking/{id}")

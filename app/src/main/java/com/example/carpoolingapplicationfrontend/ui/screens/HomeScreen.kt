@@ -1,5 +1,6 @@
 package com.example.carpoolingapplicationfrontend.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,10 +55,12 @@ import com.example.carpoolingapplicationfrontend.viewmodel.MatchUiModel
 import com.example.carpoolingapplicationfrontend.viewmodel.RideUiModel
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import com.example.carpoolingapplicationfrontend.data.models.PageQueryRequest
 
 @Composable
 fun HomeScreen(
     viewModel: BookingViewModel,
+    currentUserId: Long,
     onViewRideDetails: (rideId: String) -> Unit,
     onViewMatch: (matchId: String) -> Unit,
     onOfferRide: () -> Unit,
@@ -68,20 +71,25 @@ fun HomeScreen(
 ) {
     val matchedBookingsState by viewModel.matchedBookingsState.collectAsState()
     val userBookingsState by viewModel.userBookingsState.collectAsState()
-    val upcomingRide = viewModel.getUpcomingRideUiModel(userBookingsState)
+    //val upcomingRide = viewModel.getUpcomingRideUiModel(userBookingsState)
+    val upcomingBookings = viewModel.getUpcomingRideUiModels(userBookingsState)
+    val upcomingRide = upcomingBookings.firstOrNull()
     val matches = viewModel.getMatchUiModels(matchedBookingsState)
     val isLoading = matchedBookingsState is BookingRequestUiState.Loading ||
         userBookingsState is BookingRequestUiState.Loading
     val errorMessage = (matchedBookingsState as? BookingRequestUiState.Error)?.message
         ?: (userBookingsState as? BookingRequestUiState.Error)?.message
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(currentUserId) {
+
+        Log.d("HomeScreen", "user id: " + currentUserId)
         // Load current user's bookings
         viewModel.getBookingsByUserId(
-            id = viewModel.getCurrentUserId(),
+            id = currentUserId,
             request = PageQueryRequest(
                 pageNum = 1,
-                pageSize = 20
+                pageSize = 20,
+                userId = currentUserId
             )
         )
     }
@@ -106,12 +114,21 @@ fun HomeScreen(
                 when {
                     isLoading -> LoadingCard()
                     errorMessage != null -> ErrorCard(message = errorMessage)
-                    upcomingRide != null -> RideCard(
-                        ride = upcomingRide,
-                        onViewDetails = { onViewRideDetails(upcomingRide.id) }
-                    )
-                }
+                    upcomingRide != null -> {
+                        RideCard(
+                            ride = upcomingRide,
+                            onViewDetails = { onViewRideDetails(upcomingRide.id) }
+                        )
 
+                        // Commenting out the upcoming bookings section (not required)
+//                        if (upcomingBookings.size > 1) {
+//                            UpcomingBookingsCard(
+//                                rides = upcomingBookings.drop(1),
+//                                onViewRideDetails = onViewRideDetails
+//                            )
+//                        }
+                    }
+                    }
                 MatchNotificationsCard(
                     matches = matches,
                     onViewMatch = onViewMatch
@@ -124,10 +141,12 @@ fun HomeScreen(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-            }
+
+                }
         }
     }
 }
+
 
 @Composable
 private fun HomeHeader(
@@ -174,7 +193,7 @@ private fun RideCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             SectionHeader(title = "Upcoming Ride")
-            StatusBadge(text = ride.status)
+            StatusBadge(text = ride.ride_type)
         }
 
         Spacer(modifier = Modifier.height(22.dp))
@@ -217,7 +236,6 @@ private fun RideCard(
         }
     }
 }
-
 @Composable
 private fun MatchNotificationsCard(
     matches: List<MatchUiModel>,
@@ -541,3 +559,60 @@ private fun ErrorCard(
         )
     }
 }
+//
+//@Composable
+//private fun UpcomingBookingsCard(
+//    rides: List<RideUiModel>,
+//    onViewRideDetails: (String) -> Unit
+//) {
+//    ElevatedSectionCard {
+//
+//        SectionHeader(title = "Upcoming Bookings")
+//
+//        Spacer(modifier = Modifier.height(18.dp))
+//
+//        Column(
+//            verticalArrangement = Arrangement.spacedBy(12.dp)
+//        ) {
+//
+//            rides.forEach { ride ->
+//
+//                Row(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .clip(RoundedCornerShape(12.dp))
+//                        .background(Color(0xFFF8FAFC))
+//                        .clickable {
+//                            onViewRideDetails(ride.id)
+//                        }
+//                        .padding(16.dp),
+//                    horizontalArrangement = Arrangement.SpaceBetween,
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//
+//                    Column(
+//                        modifier = Modifier.weight(1f)
+//                    ) {
+//
+//                        Text(
+//                            text = "${ride.fromLocation} → ${ride.toLocation}",
+//                            style = MaterialTheme.typography.bodyLarge,
+//                            fontWeight = FontWeight.Bold,
+//                            color = Color(0xFF111827)
+//                        )
+//
+//                        Spacer(modifier = Modifier.height(6.dp))
+//
+//                        Text(
+//                            text = "${ride.date} • ${ride.time}",
+//                            style = MaterialTheme.typography.bodyMedium,
+//                            color = MaterialTheme.colorScheme.onSurfaceVariant
+//                        )
+//                    }
+//
+//                    StatusBadge(text = ride.status)
+//                }
+//            }
+//        }
+//    }
+//}

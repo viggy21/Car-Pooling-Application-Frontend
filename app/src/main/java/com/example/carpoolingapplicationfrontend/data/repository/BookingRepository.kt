@@ -1,5 +1,6 @@
 package com.example.carpoolingapplicationfrontend.data.repository
 
+import android.util.Log
 import com.example.carpoolingapplicationfrontend.data.api.BookingApiService
 import com.example.carpoolingapplicationfrontend.data.models.AcceptMatchResponse
 import com.example.carpoolingapplicationfrontend.data.models.ApiResponse
@@ -107,16 +108,15 @@ class BookingRepository(
         request: PageQueryRequest
     ): Result<UserBookingsResponse> {
         return try {
+            Log.d("BookingRepository", "User id: $id")
             handleApiResponse(
                 bookingApiService.getBookingsByUserId(
                     id = id,
-                    pageNum = request.pageNum,
-                    pageSize = request.pageSize,
-                    totalSize = request.totalSize,
-                    userId = request.userId
+                    request = request
                 )
             )
         } catch (e: Exception) {
+            Log.d("BookingRepository", "Getting bookings for user id $id failed: ${e.message}")
             Result.failure(e)
         }
     }

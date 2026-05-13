@@ -90,6 +90,14 @@ data class ApiResponse<T>(
     val data: T?
 )
 
+object BookingStatus {
+    const val REQUESTED = 0
+    const val MATCHED = 1
+    const val ONGOING = 2
+    const val COMPLETED = 3
+    const val CANCELLED = 4
+}
+
 typealias CreateBookingResponse = ApiResponse<Map<String, Any>>
 typealias UpdateBookingResponse = ApiResponse<Map<String, Any>>
 typealias StartTripResponse = ApiResponse<Map<String, Any>>

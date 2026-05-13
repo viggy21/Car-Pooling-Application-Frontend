@@ -1,6 +1,10 @@
 package com.example.carpoolingapplicationfrontend.viewmodel
 
 import android.app.Application
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
+import androidx.core.i18n.DateTimeFormatter
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.carpoolingapplicationfrontend.data.datastore.AuthPreferences
@@ -9,6 +13,7 @@ import com.example.carpoolingapplicationfrontend.data.models.BookingDetailRespon
 import com.example.carpoolingapplicationfrontend.data.models.BookingDto
 import com.example.carpoolingapplicationfrontend.data.models.BookingLocationResponse
 import com.example.carpoolingapplicationfrontend.data.models.BookingSearchRequest
+import com.example.carpoolingapplicationfrontend.data.models.BookingStatus
 import com.example.carpoolingapplicationfrontend.data.models.CreateBookingRequest
 import com.example.carpoolingapplicationfrontend.data.models.CreateBookingResponse
 import com.example.carpoolingapplicationfrontend.data.models.EndTripResponse
@@ -25,10 +30,17 @@ import com.example.carpoolingapplicationfrontend.data.models.UpdateBookingRespon
 import com.example.carpoolingapplicationfrontend.data.models.UserBookingsResponse
 import com.example.carpoolingapplicationfrontend.data.remote.ApiProvider
 import com.example.carpoolingapplicationfrontend.data.repository.BookingRepository
+import com.example.carpoolingapplicationfrontend.ui.screens.PassengerUiModel
+import com.example.carpoolingapplicationfrontend.ui.screens.VehicleUiModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.util.Date
+import java.util.Locale
+import com.example.carpoolingapplicationfrontend.ui.screens.RideTab
 
 sealed class CreateBookingUiState {
     object Idle : CreateBookingUiState()
@@ -65,7 +77,29 @@ data class RideUiModel(
     val date: String,
     val time: String,
     val seats: String?,
-    val status: String
+    val ride_type: String,
+    val ride_status: Int,
+    val remark: String?
+)
+
+data class RideDetailsUiModel(
+    val id: String,
+    val type: String,
+    val from: String,
+    val to: String,
+    val date: String,
+    val time: String,
+
+    val seats: Int,
+    val passengers: List<PassengerUiModel>,
+
+    val remark: String?,
+
+    val estimatedCost: String,
+    val estimatedEnergy: String,
+    val estimatedCO2: String,
+
+    val vehicle: VehicleUiModel?
 )
 
 data class MatchUiModel(
@@ -263,6 +297,7 @@ class BookingViewModel(
     }
 
     fun getBookingsByUserId(id: Long, request: PageQueryRequest) {
+        Log.d("BookingViewModel", "Fetching bookings for userId=$id")
         launchBookingRequest(_userBookingsState, "Failed to load user bookings") {
             repository.getBookingsByUserId(id, request)
         }
@@ -305,24 +340,79 @@ class BookingViewModel(
         )
     }
 
-    fun getUpcomingRideUiModel(
+//    fun getUpcomingRideUiModel(
+//        state: BookingRequestUiState<UserBookingsResponse>
+//    ): RideUiModel? {
+//        val bookings = (state as? BookingRequestUiState.Success)?.response?.data?.data
+//        return bookings?.firstOrNull()?.toRideUiModel()
+//            ?: if (state is BookingRequestUiState.Idle) {
+//                RideUiModel(
+//                    id = "mock-upcoming-ride",
+//                    fromLocation = "Clayton Campus",
+//                    toLocation = "Caulfield Campus",
+//                    date = "2026-05-03",
+//                    time = "09:00 AM",
+//                    seats = "3 seats",
+//                    status = "Offering",
+//                    remark = "Good ride"
+//                )
+//            } else {
+//                null
+//            }
+//    }
+
+//    fun getUpcomingRideUiModels(
+//        state: BookingRequestUiState<UserBookingsResponse>
+//    ): List<RideUiModel> {
+//
+//        val bookings =
+//            (state as? BookingRequestUiState.Success)
+//                ?.response
+//                ?.data
+//                ?.data
+//                ?: emptyList()
+//
+//        return bookings
+//            .map { it.toRideUiModel() }
+//            .sortedBy { it.date + it.time }
+//    }
+fun getUpcomingRideUiModels(
+    state: BookingRequestUiState<UserBookingsResponse>
+): List<RideUiModel> {
+
+    val bookings =
+        (state as? BookingRequestUiState.Success)
+            ?.response
+            ?.data
+            ?.data
+            ?: emptyList()
+
+    return bookings
+        .filter {
+            it.status in listOf(
+                BookingStatus.REQUESTED,
+                BookingStatus.MATCHED,
+                BookingStatus.ONGOING
+            )
+        }
+        .map { it.toRideUiModel() }
+        .sortedBy { it.date + it.time }
+}
+
+    fun getAllRideUiModels(
         state: BookingRequestUiState<UserBookingsResponse>
-    ): RideUiModel? {
-        val bookings = (state as? BookingRequestUiState.Success)?.response?.data?.data
-        return bookings?.firstOrNull()?.toRideUiModel()
-            ?: if (state is BookingRequestUiState.Idle) {
-                RideUiModel(
-                    id = "mock-upcoming-ride",
-                    fromLocation = "Clayton Campus",
-                    toLocation = "Caulfield Campus",
-                    date = "2026-05-03",
-                    time = "09:00 AM",
-                    seats = "3 seats",
-                    status = "Offering"
-                )
-            } else {
-                null
-            }
+    ): List<RideUiModel> {
+
+        val bookings =
+            (state as? BookingRequestUiState.Success)
+                ?.response
+                ?.data
+                ?.data
+                ?: emptyList()
+
+        return bookings
+            .map { it.toRideUiModel() }
+            .sortedBy { it.date + it.time }
     }
 
     fun getMatchUiModels(
@@ -415,6 +505,8 @@ class BookingViewModel(
         viewModelScope.launch {
             val result = request()
 
+            Log.d("BookingViewModel", "Request result = $result")
+
             state.value = result.fold(
                 onSuccess = { BookingRequestUiState.Success(it) },
                 onFailure = {
@@ -424,18 +516,97 @@ class BookingViewModel(
         }
     }
 
-    private fun BookingDto.toRideUiModel(): RideUiModel {
-        return RideUiModel(
-            id = id.toString(),
-            fromLocation = originName,
-            toLocation = destName,
-            date = expectedStartTime.substringBefore("T", expectedStartTime),
-            time = expectedStartTime.substringAfter("T", expectedStartTime)
-                .substringBefore(".")
-                .takeIf { it != expectedStartTime }
-                ?: expectedStartTime,
-            seats = null,
-            status = if (role == 0) "Offering" else "Requesting"
-        )
+//    private fun BookingDto.toRideUiModel(): RideUiModel {
+//        return RideUiModel(
+//            id = id.toString(),
+//            fromLocation = originName,
+//            toLocation = destName,
+//            date = expectedStartTime.substringBefore("T", expectedStartTime),
+//            time = expectedStartTime.substringAfter("T", expectedStartTime)
+//                .substringBefore(".")
+//                .takeIf { it != expectedStartTime }
+//                ?: expectedStartTime,
+//            seats = null,
+//            status = if (role == 0) "Offering" else "Requesting"
+//        )
+//    }
+private fun BookingDto.toRideUiModel(): RideUiModel {
+
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+    val dateTime: Date? = try {
+        inputFormat.parse(expectedStartTime)
+    } catch (e: Exception) {
+        null
     }
+
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+
+    val date = dateTime?.let { dateFormat.format(it) } ?: ""
+    val time = dateTime?.let { timeFormat.format(it) } ?: ""
+
+    return RideUiModel(
+        id = id.toString(),
+        fromLocation = originName,
+        toLocation = destName,
+        date = date,
+        time = time,
+        seats = null,
+        ride_type = if (role == 0) "Offering" else "Requesting",
+        ride_status = status,
+        remark = remark
+    )
+}
+    fun getRideByIdUiModel(
+        state: BookingRequestUiState<BookingDetailResponse>
+    ): RideUiModel? {
+
+        val booking = (state as? BookingRequestUiState.Success)?.response?.data
+
+        return booking?.toRideUiModel()
+    }
+
+
+
+    fun observeBookingDetail(): StateFlow<BookingRequestUiState<BookingDetailResponse>> {
+        return bookingDetailState
+    }
+
+}
+
+fun BookingDto.toRideDetailsUiModel(): RideDetailsUiModel {
+
+    val inputFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    val dateTime = runCatching { inputFormat.parse(expectedStartTime) }.getOrNull()
+
+    val date = dateTime?.let {
+        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(it)
+    } ?: ""
+
+    val time = dateTime?.let {
+        SimpleDateFormat("hh:mm a", Locale.getDefault()).format(it)
+    } ?: ""
+
+    return RideDetailsUiModel(
+        id = id.toString(),
+        type = if (role == 0) "offer" else "request",
+        from = originName,
+        to = destName,
+        date = date,
+        time = time,
+
+        seats = 1, // TODO: backend doesn't currently provide passenger count per booking DTO, temporary default
+
+        passengers = emptyList(), // TODO: needs separate API later
+
+        remark = remark,
+
+        // TODO: the below are placeholders for now
+        estimatedCost = "$0.00",
+        estimatedEnergy = "0 kWh",
+        estimatedCO2 = "0 kg",
+
+        vehicle = null // not in BookingDto
+    )
 }

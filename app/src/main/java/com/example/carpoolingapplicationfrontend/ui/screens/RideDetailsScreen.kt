@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -56,6 +55,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.carpoolingapplicationfrontend.ui.components.AppPrimaryGreen
+import com.example.carpoolingapplicationfrontend.viewmodel.RideDetailsUiModel
+import com.example.carpoolingapplicationfrontend.viewmodel.RideUiModel
 
 enum class RideStatus {
     NOT_STARTED,
@@ -74,54 +75,66 @@ data class VehicleUiModel(
     val licensePlate: String
 )
 
-data class RideDetailsUiModel(
-    val id: String,
-    val type: String,
-    val from: String,
-    val to: String,
-    val date: String,
-    val time: String,
-    val seats: Int,
-    val passengers: List<PassengerUiModel>,
-    val notes: String?,
-    val estimatedCost: String,
-    val estimatedEnergy: String,
-    val estimatedCO2: String,
-    val vehicle: VehicleUiModel?
-)
+//data class RideDetailsUiModel(
+//    val id: String,
+//    val type: String,
+//    val from: String,
+//    val to: String,
+//    val date: String,
+//    val time: String,
+//    val seats: Int,
+//    val passengers: List<PassengerUiModel>,
+//    val notes: String?,
+//    val estimatedCost: String,
+//    val estimatedEnergy: String,
+//    val estimatedCO2: String,
+//    val vehicle: VehicleUiModel?
+//)
 
 @Composable
 fun RideDetailsScreen(
     rideId: String,
+    ride: RideDetailsUiModel?,
     onBackClick: () -> Unit
 ) {
+
 
     var rideStatus by rememberSaveable {
         mutableStateOf(RideStatus.NOT_STARTED)
     }
 
-    val ride = RideDetailsUiModel(
-        id = rideId,
-        type = "offer",
-        from = "Clayton Campus - Building 11",
-        to = "Caulfield Campus - Library",
-        date = "2026-05-03",
-        time = "09:00 AM",
-        seats = 3,
-        passengers = listOf(
-            PassengerUiModel("1", "Sarah Johnson"),
-            PassengerUiModel("2", "Michael Chen")
-        ),
-        notes = "Will wait at main entrance for 5 minutes",
-        estimatedCost = "$15.00",
-        estimatedEnergy = "3.2 kWh",
-        estimatedCO2 = "2.4 kg",
-        vehicle = VehicleUiModel(
-            make = "Toyota",
-            model = "Camry",
-            licensePlate = "ABC123"
-        )
-    )
+//    val ride = RideDetailsUiModel(
+//        id = rideId,
+//        type = "offer",
+//        from = "Clayton Campus - Building 11",
+//        to = "Caulfield Campus - Library",
+//        date = "2026-05-03",
+//        time = "09:00 AM",
+//        seats = 3,
+//        passengers = listOf(
+//            PassengerUiModel("1", "Sarah Johnson"),
+//            PassengerUiModel("2", "Michael Chen")
+//        ),
+//        notes = "Will wait at main entrance for 5 minutes",
+//        estimatedCost = "$15.00",
+//        estimatedEnergy = "3.2 kWh",
+//        estimatedCO2 = "2.4 kg",
+//        vehicle = VehicleUiModel(
+//            make = "Toyota",
+//            model = "Camry",
+//            licensePlate = "ABC123"
+//        )
+//    )
+
+    if (ride == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Loading ride details...")
+        }
+        return
+    }
 
     LazyColumn(
         modifier = Modifier
@@ -313,6 +326,7 @@ private fun RideTypeChip(
 @Composable
 private fun RouteCard(
     ride: RideDetailsUiModel
+    //ride: RideUiModel
 ) {
 
     ElevatedCardContainer {
@@ -404,7 +418,7 @@ private fun RouteCard(
             }
         }
 
-        if (ride.notes != null) {
+        if (ride.remark != null) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -427,7 +441,7 @@ private fun RouteCard(
                     Spacer(modifier = Modifier.height(4.dp))
 
                     Text(
-                        text = ride.notes,
+                        text = ride.remark,
                         color = Color(0xFF1D4ED8)
                     )
                 }
